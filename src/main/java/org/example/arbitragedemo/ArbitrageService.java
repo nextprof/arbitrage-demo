@@ -1,5 +1,6 @@
 package org.example.arbitragedemo;
 
+import io.micrometer.core.instrument.Gauge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ArbitrageService {
     private final Map<CryptoCurrencyExchange, BigDecimal> rates = new ConcurrentHashMap<>();
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private BigDecimal currentArbitrageValue = BigDecimal.ZERO;
 
     public void calculate(String price, CryptoCurrencyExchange cryptoCurrencyExchange) {
         rates.put(cryptoCurrencyExchange, new BigDecimal(price));
@@ -21,7 +23,7 @@ public class ArbitrageService {
             BigDecimal ethToBtcRate = rates.get(CryptoCurrencyExchange.ETH_BTC);
             BigDecimal btcToBnbRate = rates.get(CryptoCurrencyExchange.BTC_BNB);
 
-            BigDecimal arbitrage = bnbToEthRate.multiply(ethToBtcRate).multiply(btcToBnbRate);
+            currentArbitrageValue = bnbToEthRate.multiply(ethToBtcRate).multiply(btcToBnbRate);
 //            LOG.error("Arbitrage rate: " + arbitrage);
         } catch (Exception e) {
             //ignore
@@ -29,5 +31,7 @@ public class ArbitrageService {
 
     }
 
-
+    public BigDecimal getCurrentArbitrageValue() {
+        return currentArbitrageValue;
+    }
 }

@@ -1,5 +1,7 @@
 package org.example.arbitragedemo;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
@@ -17,6 +19,10 @@ public class WebSocketClientConfig implements ApplicationListener<ApplicationSta
     @Autowired
     @Lazy
     private List<CryptoWebSocket> cryptoWebSockets;
+    @Autowired
+    private ArbitrageService arbitrageService;
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Bean
     public WebSocketClient webSocketClient() {
@@ -28,6 +34,8 @@ public class WebSocketClientConfig implements ApplicationListener<ApplicationSta
         for (CryptoWebSocket cryptoWebSocket : cryptoWebSockets) {
             cryptoWebSocket.connect();
         }
+        Gauge.builder("arbitrage-value", () -> arbitrageService.getCurrentArbitrageValue())
+                .register(meterRegistry);
     }
 
 }

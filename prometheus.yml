@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s # Okres, co ile Prometheus pobiera dane (domyślnie 15s)
+  evaluation_interval: 15s # Okres, co ile Prometheus ocenia reguły (domyślnie 15s)
+
+scrape_configs:
+  - job_name: 'arbitrage'
+    scrape_interval: 5s # Możesz nadpisać globalny scrape_interval dla tej pracy
+    static_configs:
+      - targets: ['host.docker.internal:8080/actuator/prometheus']
