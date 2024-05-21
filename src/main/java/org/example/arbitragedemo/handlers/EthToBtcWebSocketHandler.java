@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.arbitragedemo.ArbitrageService;
 import org.example.arbitragedemo.BinanceDto;
-import org.example.arbitragedemo.CryptoCurrency;
+import org.example.arbitragedemo.CryptoCurrencyExchange;
 import org.example.arbitragedemo.CryptoWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import org.springframework.web.socket.*;
 import org.springframework.web.socket.client.WebSocketClient;
 
 @Service
-public class EthWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
+public class EthToBtcWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
     @Autowired
     private WebSocketClient webSocketClient;
@@ -29,7 +29,7 @@ public class EthWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
     public boolean connect() {
         try {
             webSocketClient.doHandshake(this,
-                            "wss://stream.binance.com:9443/ws/etheur@trade")
+                            "wss://stream.binance.com:9443/ws/ethbtc@trade")
                     .get();
             return true;
         } catch (Exception e) {
@@ -39,7 +39,7 @@ public class EthWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        LOG.info("Binance ETH-EUR web socket connection established");
+        LOG.info("Binance ETH-BTC web socket connection established");
     }
 
     @Override
@@ -47,8 +47,8 @@ public class EthWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
         try {
             BinanceDto dto = objectMapper.readValue(message.getPayload().toString(), BinanceDto.class);
-            LOG.info("Binance ETH-EUR web socket message received price: {}", dto.p());
-            arbitrageService.calculate(dto.p(), CryptoCurrency.ETH);
+//            LOG.info("Binance ETH-BTC web socket message received price: {}", dto.p());
+            arbitrageService.calculate(dto.p(), CryptoCurrencyExchange.ETH_BTC);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -62,7 +62,7 @@ public class EthWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) {
-        LOG.info("Binance ETH-EUR web socket connection closed");
+        LOG.info("Binance ETH-BTC web socket connection closed");
     }
 
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.arbitragedemo.ArbitrageService;
 import org.example.arbitragedemo.BinanceDto;
-import org.example.arbitragedemo.CryptoCurrency;
+import org.example.arbitragedemo.CryptoCurrencyExchange;
 import org.example.arbitragedemo.CryptoWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 
 @Service
-public class BnbWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
+public class BnbToEthWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
     @Autowired
     private WebSocketClient webSocketClient;
@@ -32,7 +32,7 @@ public class BnbWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
     public boolean connect() {
         try {
             webSocketClient.doHandshake(this,
-                            "wss://stream.binance.com:9443/ws/bnbeur@trade")
+                            "wss://stream.binance.com:9443/ws/bnbeth@trade")
                     .get();
             return true;
         } catch (Exception e) {
@@ -42,7 +42,7 @@ public class BnbWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        LOG.info("Binance BNB-EUR web socket connection established");
+        LOG.info("Binance BNB-ETH web socket connection established");
     }
 
     @Override
@@ -50,8 +50,8 @@ public class BnbWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
         try {
             BinanceDto dto = objectMapper.readValue(message.getPayload().toString(), BinanceDto.class);
-            LOG.info("Binance BNB-EUR web socket message received price: {}", dto.p());
-            arbitrageService.calculate(dto.p(), CryptoCurrency.BNB);
+//            LOG.info("Binance BNB-ETH web socket message received price: {}", dto.p());
+            arbitrageService.calculate(dto.p(), CryptoCurrencyExchange.BNB_ETH);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -65,7 +65,7 @@ public class BnbWebSocketHandler implements WebSocketHandler, CryptoWebSocket {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) {
-        LOG.info("Binance BNB-EUR web socket connection closed");
+        LOG.info("Binance BNB-ETH web socket connection closed");
     }
 
 

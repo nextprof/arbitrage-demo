@@ -10,24 +10,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ArbitrageService {
-    private final Map<CryptoCurrency, BigDecimal> rates = new ConcurrentHashMap<>();
-    private Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private final Map<CryptoCurrencyExchange, BigDecimal> rates = new ConcurrentHashMap<>();
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    public void calculate(String price, CryptoCurrency cryptoCurrency) {
-        rates.put(cryptoCurrency, new BigDecimal(price));
+    public void calculate(String price, CryptoCurrencyExchange cryptoCurrencyExchange) {
+        rates.put(cryptoCurrencyExchange, new BigDecimal(price));
 
         try {
-            BigDecimal bnbRate = rates.get(CryptoCurrency.BNB);
-            BigDecimal btcRate = rates.get(CryptoCurrency.BTC);
-            BigDecimal ethRate = rates.get(CryptoCurrency.ETH);
+            BigDecimal bnbToEthRate = rates.get(CryptoCurrencyExchange.BNB_ETH);
+            BigDecimal ethToBtcRate = rates.get(CryptoCurrencyExchange.ETH_BTC);
+            BigDecimal btcToBnbRate = rates.get(CryptoCurrencyExchange.BTC_BNB);
 
-            //calculations
+            BigDecimal arbitrage = bnbToEthRate.multiply(ethToBtcRate).multiply(btcToBnbRate);
+//            LOG.error("Arbitrage rate: " + arbitrage);
         } catch (Exception e) {
             //ignore
         }
-//        for (CryptoCurrency currency : rates.keySet()) {
-//            LOG.warn(currency.name() + " rate: " + rates.get(currency));
-//        }
+
     }
 
 
