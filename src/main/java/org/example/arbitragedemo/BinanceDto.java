@@ -1,6 +1,11 @@
 package org.example.arbitragedemo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record BinanceDto(
-        String p
+        @JsonProperty(value = "b")
+        String bidPrice,
+        @JsonProperty(value = "a")
+        String askPrice
 ) {
 }

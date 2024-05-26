@@ -11,21 +11,32 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ArbitrageService {
-    private final Map<CryptoCurrencyExchange, BigDecimal> rates = new ConcurrentHashMap<>();
+    //ask bid
+    private final Map<CryptoCurrencyExchange, Pair<BigDecimal, BigDecimal>> rates = new ConcurrentHashMap<>();
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private BigDecimal currentArbitrageValue = BigDecimal.ZERO;
 
-    public void calculate(String price, CryptoCurrencyExchange cryptoCurrencyExchange) {
-        rates.put(cryptoCurrencyExchange, new BigDecimal(price));
+    private final BigDecimal binanceCommissionMultiplier = new BigDecimal("0.999");
+
+    public void calculate(String askPrice, String bidPrice, CryptoCurrencyExchange cryptoCurrencyExchange) {
+        rates.put(cryptoCurrencyExchange, Pair.create(new BigDecimal(askPrice), new BigDecimal(bidPrice)));
 
         try {
-            BigDecimal bnbToEthRate = rates.get(CryptoCurrencyExchange.BNB_ETH);
-            BigDecimal ethToBtcRate = rates.get(CryptoCurrencyExchange.ETH_BTC);
-            BigDecimal btcToBnbRate = rates.get(CryptoCurrencyExchange.BTC_BNB);
+            Pair<BigDecimal, BigDecimal> bnbToEth = rates.getOrDefault(CryptoCurrencyExchange.BNB_ETH, null);
+            Pair<BigDecimal, BigDecimal> ethToBtc = rates.getOrDefault(CryptoCurrencyExchange.ETH_BTC, null);
+            Pair<BigDecimal, BigDecimal> btcToBnb = rates.getOrDefault(CryptoCurrencyExchange.BTC_BNB, null);
+            if (bnbToEth == null || ethToBtc == null || btcToBnb == null)
+                return;
+            BigDecimal bnbToEthAskRate = bnbToEth.first;
+            BigDecimal ethToBtcBidRate = ethToBtc.second;
+            BigDecimal btcToBnbBidRate = btcToBnb.second;
 
-            currentArbitrageValue = bnbToEthRate.multiply(ethToBtcRate).multiply(btcToBnbRate);
-//            LOG.error("Arbitrage rate: " + arbitrage);
+            currentArbitrageValue = bnbToEthAskRate.multiply(binanceCommissionMultiplier)
+                    .multiply(ethToBtcBidRate).multiply(binanceCommissionMultiplier)
+                    .multiply(btcToBnbBidRate).multiply(binanceCommissionMultiplier);
+            LOG.info("Arbitrage rate: " + currentArbitrageValue);
         } catch (Exception e) {
+            LOG.error("arbitrage rate calculation failed", e);
             //ignore
         }
 

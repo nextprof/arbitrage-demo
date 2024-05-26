@@ -29,17 +29,13 @@ public class BnbToBtcWebSocketHandler implements WebSocketHandler, CryptoWebSock
     @Autowired
     private ArbitrageService arbitrageService;
 
-    //BNB BTC
-    //BTC ETH
-    //ETH BNB
-
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public boolean connect() {
         try {
             webSocketClient.doHandshake(this,
-                            "wss://stream.binance.com:9443/ws/bnbbtc@trade")
+                            "wss://stream.binance.com:9443/ws/bnbbtc@bookTicker")
                     .get();
             return true;
         } catch (Exception e) {
@@ -49,7 +45,7 @@ public class BnbToBtcWebSocketHandler implements WebSocketHandler, CryptoWebSock
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-//        LOG.info("Binance BNB-BTC web socket connection established");
+        LOG.info("Binance BNB-BTC web socket connection established");
     }
 
     @Override
@@ -57,8 +53,10 @@ public class BnbToBtcWebSocketHandler implements WebSocketHandler, CryptoWebSock
 
         try {
             BinanceDto dto = objectMapper.readValue(message.getPayload().toString(), BinanceDto.class);
-//            LOG.info("Binance BNB-BTC web socket message received price: {}", dto.p());
-            arbitrageService.calculate(BigDecimal.ONE.divide(new BigDecimal(dto.p()), 20, RoundingMode.HALF_UP).toString(), CryptoCurrencyExchange.BTC_BNB);
+            arbitrageService.calculate(
+                    BigDecimal.ONE.divide(new BigDecimal(dto.askPrice()), 14, RoundingMode.HALF_UP).toString(),
+                    BigDecimal.ONE.divide(new BigDecimal(dto.bidPrice()), 14, RoundingMode.HALF_UP).toString(),
+                    CryptoCurrencyExchange.BTC_BNB);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +70,7 @@ public class BnbToBtcWebSocketHandler implements WebSocketHandler, CryptoWebSock
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) {
-//        LOG.info("Binance BNB-BTC web socket connection closed");
+        LOG.info("Binance BNB-BTC web socket connection closed");
     }
 
 

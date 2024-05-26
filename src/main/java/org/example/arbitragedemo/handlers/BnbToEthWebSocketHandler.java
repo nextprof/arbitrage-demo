@@ -32,7 +32,7 @@ public class BnbToEthWebSocketHandler implements WebSocketHandler, CryptoWebSock
     public boolean connect() {
         try {
             webSocketClient.doHandshake(this,
-                            "wss://stream.binance.com:9443/ws/bnbeth@trade")
+                            "wss://stream.binance.com:9443/ws/bnbeth@bookTicker")
                     .get();
             return true;
         } catch (Exception e) {
@@ -50,8 +50,7 @@ public class BnbToEthWebSocketHandler implements WebSocketHandler, CryptoWebSock
 
         try {
             BinanceDto dto = objectMapper.readValue(message.getPayload().toString(), BinanceDto.class);
-//            LOG.info("Binance BNB-ETH web socket message received price: {}", dto.p());
-            arbitrageService.calculate(dto.p(), CryptoCurrencyExchange.BNB_ETH);
+            arbitrageService.calculate(dto.askPrice(), dto.bidPrice(), CryptoCurrencyExchange.BNB_ETH);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
